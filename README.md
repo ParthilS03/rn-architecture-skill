@@ -1,4 +1,4 @@
-# 🧠 RN Blueprint Skill
+# 🧠 RN Blueprint Skills
 
 ## AI Skill Installer for Production-Grade React Native Architecture
 
@@ -52,5 +52,5 @@ Think of it as an **AI architect** for React Native.
 No global installation required.
 
 ```bash
-npx @parthil-savaliya/rn-blueprint-skill
+npx @parthil-savaliya/rn-architecture-skill
 ```
