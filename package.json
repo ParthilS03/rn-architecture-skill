@@ -1,0 +1,14 @@
+{
+  "name": "@parthil-savaliya/rn-architecture-skill",
+  "version": "2.0.1",
+  "description": "AI-powered skill installer that generates production-ready React Native architecture with best practices and scalable patterns.",
+  "bin": {
+    "rn-blueprint-skill": "./bin/install.js"
+  },
+  "type": "module",
+  "files": [
+    "rules",
+    "bin"
+  ],
+  "license": "MIT"
+}

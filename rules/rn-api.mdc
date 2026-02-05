@@ -1,0 +1,50 @@
+---
+name: rn-api-layer
+description: API communication architecture for React Native apps
+triggers:
+  - api setup
+  - data fetching
+  - backend integration
+  - network layer
+---
+
+# API Layer Rules
+
+Before implementing the API layer, ASK:
+
+"Which API type do you want?
+
+1. **REST** → use Axios
+2. **GraphQL** → use Apollo Client"
+
+Then implement only the chosen path.
+
+---
+
+## If REST (Axios)
+
+- Use **Axios** as the HTTP client.
+- Create a shared instance in `src/services/axiosClient.ts`.
+- Configure interceptors:
+  - **Request**: inject auth token (e.g. from storage or context) into `Authorization` header.
+  - **Response**: central error handling (e.g. 401 → logout/refresh, 4xx/5xx → normalized error shape).
+  - **Development only**: log request/response (URL, method, status) for debugging; no logging in production.
+- Export typed functions from `src/services/` that use this client; do not export the raw Axios instance for ad-hoc use in screens.
+
+---
+
+## If GraphQL (Apollo)
+
+- Use **Apollo Client** as the GraphQL client.
+- Create and configure the client in `src/services/apolloClient.ts`.
+- Set the GraphQL endpoint, and attach auth (e.g. `Authorization` header via `ApolloLink` or `authLink`).
+- Use Apollo’s `HttpLink` (or `createUploadLink` if you need file uploads).
+- Prefer `useQuery` / `useMutation` / `useLazyQuery` in components; keep query/mutation definitions in `src/services/` (or next to services), not inline in screens.
+
+---
+
+## General
+
+- **Business logic lives in `src/services/`**: all API calls and request/response shaping go there.
+- **Never call APIs directly inside screens**: screens call service functions or hooks that wrap Apollo/axios.
+- Use a single client (one Axios instance or one Apollo Client) for the app; do not create new clients per screen or feature.

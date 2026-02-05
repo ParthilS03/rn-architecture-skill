@@ -1,0 +1,133 @@
+---
+name: rn-architecture
+description: Defines scalable folder structure, path aliases, index exports, and boilerplate setup
+triggers:
+  - create folder
+  - create feature
+  - project structure
+  - screen creation
+  - boilerplate
+  - path alias
+  - initial setup
+---
+
+# Architecture Rules
+
+## Folder Structure
+
+Use this structure under `src/`:
+
+```
+src/
+  api/
+  services/
+  components/
+  screens/
+  navigation/
+  hooks/
+  store/
+  utils/
+  constants/
+  theme/
+  assets/
+    images/
+    fonts/
+    svgs/
+```
+
+## Path Aliases
+
+Use `@/` as the alias for `src/`. All imports MUST use these aliases (no relative imports like `../../../components`).
+
+| Alias | Resolves to |
+|-------|-------------|
+| `@/api` | src/api |
+| `@/services` | src/services |
+| `@/components` | src/components |
+| `@/screens` | src/screens |
+| `@/navigation` | src/navigation |
+| `@/hooks` | src/hooks |
+| `@/store` | src/store |
+| `@/utils` | src/utils |
+| `@/constants` | src/constants |
+| `@/theme` | src/theme |
+| `@/assets` | src/assets |
+
+**Import examples:**
+```typescript
+import { Button } from '@/components';
+import { useAuth } from '@/hooks';
+import { apiClient } from '@/services';
+import { colors } from '@/theme';
+```
+
+## Index Files
+
+Every folder under `src/` MUST have an `index.ts` (or `index.tsx` for UI folders) that re-exports public members. Consumers import from the folder alias, not from individual files.
+
+- **components**: `index.ts` or `index.tsx` re-exporting all components (or grouped exports).
+- **screens**: `index.ts` re-exporting screen components.
+- **hooks**: `index.ts` re-exporting all hooks.
+- **utils**, **constants**, **theme**, **api**, **services**, **store**, **navigation**: `index.ts` re-exporting public API.
+
+**Example** — `src/components/index.ts`:
+```typescript
+export { Button } from './Button';
+export { Input } from './Input';
+export { Card } from './Card';
+```
+
+**Example** — usage in a screen:
+```typescript
+import { Button, Card } from '@/components';
+```
+
+Do not import from deep paths like `@/components/Button` unless the rule explicitly allows it; prefer `@/components`.
+
+## Automatic Boilerplate Setup
+
+When creating the project boilerplate (first-time or “scaffold as per architecture”):
+
+1. **Create folders**: Create all directories listed under `src/` (including `assets/images`, `assets/fonts`, `assets/svgs`).
+
+2. **Create index files**: Add an `index.ts` (or `index.tsx`) in each of: `api`, `services`, `components`, `screens`, `navigation`, `hooks`, `store`, `utils`, `constants`, `theme`, `assets`. Each can start as empty re-exports (e.g. `export {}`) until modules exist.
+
+3. **Configure TypeScript**: In `tsconfig.json`, set `baseUrl` and `paths`:
+   ```json
+   {
+     "compilerOptions": {
+       "baseUrl": ".",
+       "paths": {
+         "@/*": ["src/*"]
+       }
+     }
+   }
+   ```
+
+4. **Configure Babel (React Native)**: Use `babel-plugin-module-resolver` so Metro resolves the same aliases:
+   ```json
+   {
+     "plugins": [
+       ["module-resolver", {
+         "root": ["./src"],
+         "alias": {
+           "@": "./src"
+         }
+       }]
+     ]
+   }
+   ```
+   Ensure the package `babel-plugin-module-resolver` is installed.
+
+5. **Optional**: Add a root `src/index.ts` (or `index.tsx`) that re-exports app entry (e.g. navigation or root component) if the project uses it.
+
+After setup, all new code must use `@/` aliases and folder-level imports via index files.
+
+## Rules
+
+- Screens = UI only; no business logic.
+- API client and business logic live in `src/services/`.
+- Reusable UI lives in `src/components/`.
+- Utilities go in `src/utils/`.
+- Global styles and design tokens go in `src/theme/`.
+- Use path aliases for all imports; maintain index files for every `src/` folder.

@@ -1,0 +1,61 @@
+---
+name: rn-master-skill
+description: Master control skill for production-grade React Native project setup
+triggers:
+  - project setup
+  - new project
+  - initial setup
+  - architecture decision
+---
+
+# Master Rules — Production React Native
+
+This project is treated as a **production-grade React Native application**. All structure, tooling, and patterns must align with the rules below. Do not introduce one-off or legacy patterns.
+
+---
+
+## Sub-rules (follow when relevant)
+
+When doing project setup, new features, or refactors, apply the rule that matches the task:
+
+| Area | Rule / File | When to use |
+|------|----------------|-------------|
+| **Architecture** | `rn-architecture` | Folder structure, screens, components, services, navigation, separation of concerns |
+| **Environment** | `rn-env` | Env files, dev/stage/prod, base URL, react-native-config, bundle ID policy |
+| **State** | `rn-state-management` | Global state, auth store, Zustand vs Redux Toolkit |
+| **API** | `rn-api` | REST (Axios) vs GraphQL (Apollo), client setup, services, no direct API in screens |
+| **Code quality** | `rn-code-quality` | ESLint, Prettier, Husky, lint-staged, formatting and lint config |
+
+Before generating major code or folder structure, **ensure** the right sub-rule has been considered (and applied if the task touches that area).
+
+---
+
+## Recommended order for initial project setup
+
+1. **Architecture** — Define `src/` layout (screens, components, services, assets, config).
+2. **Code quality** — ESLint, Prettier, Husky, lint-staged (so all new code is checked).
+3. **Environment** — `.env.dev` / `.env.stage` / `.env.prod`, react-native-config, no bundle ID change.
+4. **API** — After user chooses REST or GraphQL: create axios or Apollo client and service layer.
+5. **State** — After user chooses Zustand or Redux Toolkit: create store(s) and auth pattern.
+
+Adjust order only if the user’s request clearly implies a different sequence (e.g. “only set up env” → do env only).
+
+---
+
+## Decision points — ASK the user first
+
+Do **not** assume; ask and then implement once:
+
+- **API type**: “REST (Axios) or GraphQL (Apollo)?” → then follow `rn-api` for the chosen option.
+- **State management**: “Zustand or Redux Toolkit?” → then follow `rn-state-management` for the chosen option.
+
+If the user has already stated a choice (e.g. in the same chat), use that and do not ask again.
+
+---
+
+## Principles
+
+- **One source of truth**: Structure and config come from these rules and the referenced files; avoid inventing parallel patterns.
+- **Consistency**: Same patterns across the app (one API client, one state approach, one env strategy).
+- **No shortcuts**: No hardcoded URLs, no API calls from screens, no console.log in production code; follow the sub-rules.
+- **Ask when in doubt**: If a decision affects architecture, API, or state, ask the user before generating code.

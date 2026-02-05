@@ -1,0 +1,142 @@
+---
+name: rn-code-quality
+description: Enforces linting, formatting, and commit standards
+triggers:
+  - project setup
+  - lint
+  - formatting
+  - commit hooks
+---
+
+# Code Quality Rules
+
+Project must include:
+
+- **ESLint** (with config below)
+- **Prettier** (with config below)
+- **Husky** (pre-commit hooks)
+- **lint-staged** (run lint/format on staged files only)
+
+General rules:
+
+- No `console.log` in production code
+- Pre-commit hook must run lint and formatting on staged files
+- Follow modern React Native best practices
+
+---
+
+## ESLint configuration
+
+Use `.eslintrc.js` at project root with:
+
+- **Extends**: `@react-native`
+- **Plugins**: `eslint-plugin-import` (for import order)
+- **Key rules**:
+  - `react-hooks/exhaustive-deps`: `'off'`
+  - `import/order`: enforce group order (external → builtin → internal → parent/sibling/index → object → type), path groups for `react`, `react-native`, `@/**`, alphabetize, `newlines-between: 'always'`
+  - `@typescript-eslint/no-unused-vars`: `error` with `ignoreRestSiblings: true`
+
+Required order groups: `external` (React/React Native first via pathGroups) → `builtin` → `internal` (e.g. `@/**`) → `parent` / `sibling` / `index` → `object` → `type`. Alphabetize within groups; newline between groups.
+
+Example `.eslintrc.js`:
+
+```javascript
+module.exports = {
+  root: true,
+  extends: '@react-native',
+  plugins: ['import'],
+  rules: {
+    'react-hooks/exhaustive-deps': 'off',
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'external',
+          'builtin',
+          'internal',
+          ['parent', 'sibling', 'index'],
+          'object',
+          'type',
+        ],
+        pathGroups: [
+          { pattern: 'react', group: 'external', position: 'before' },
+          { pattern: 'react-native', group: 'external', position: 'before' },
+          { pattern: 'react-native/**', group: 'external', position: 'before' },
+          { pattern: '@/**', group: 'internal', position: 'after' },
+        ],
+        pathGroupsExcludedImportTypes: ['builtin'],
+        alphabetize: { order: 'asc', caseInsensitive: true },
+        'newlines-between': 'always',
+      },
+    ],
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      { ignoreRestSiblings: true },
+    ],
+  },
+};
+```
+
+Dependencies: `@react-native/eslint-config`, `eslint-plugin-import`, `@typescript-eslint/eslint-plugin` (often via extend).
+
+---
+
+## Prettier configuration
+
+Use `.prettierrc.js` or `.prettierrc` at project root:
+
+```javascript
+module.exports = {
+  bracketSpacing: true,
+  singleQuote: true,
+  trailingComma: 'all',
+};
+```
+
+Ensure Prettier is not overridden by conflicting ESLint formatting rules; use `eslint-config-prettier` if both are present.
+
+---
+
+## Husky + lint-staged
+
+Install: `husky`, `lint-staged` (dev dependencies). Use Husky for pre-commit hooks and lint-staged to run lint/format only on staged files.
+
+**1. package.json scripts**
+
+```json
+{
+  "scripts": {
+    "prepare": "husky",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\""
+  }
+}
+```
+
+**2. lint-staged config** (in `package.json` or `.lintstagedrc.js`)
+
+In `package.json`:
+
+```json
+{
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}
+```
+
+**3. Husky pre-commit hook**
+
+Create `.husky/pre-commit` (run `npx husky init` once, then replace contents of `.husky/pre-commit`):
+
+```sh
+npx lint-staged
+```
+
+After `npm install`, `prepare` runs and Husky sets up git hooks; every commit runs lint-staged on staged files. Do not skip hooks in production workflows.

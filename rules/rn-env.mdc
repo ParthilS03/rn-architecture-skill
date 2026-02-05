@@ -1,0 +1,89 @@
+---
+name: rn-environment-flavors
+description: Environment configuration rules without changing bundle identifiers
+triggers:
+  - environment setup
+  - flavors
+  - env config
+  - base url
+---
+
+# Environment Rules
+
+The app supports three environments: **dev**, **stage**, **prod**. Use **react-native-config** to switch between them. Same bundle identifier and applicationId for all; only config values differ.
+
+---
+
+## Environment files
+
+Keep env files at project root:
+
+- `.env.dev`   — local / development
+- `.env.stage` — staging / QA
+- `.env.prod`  — production
+
+Add `.env.*` to `.gitignore` if they contain secrets; commit `.env.example` (no real values) as a template.
+
+---
+
+## Allowed per-environment values
+
+Only these may differ between environments:
+
+| Item | Example variable | Notes |
+|------|------------------|--------|
+| API Base URL | `API_BASE_URL` | Required; never hardcode in code |
+| App name (display) | `APP_DISPLAY_NAME` | Optional; e.g. "MyApp Dev" |
+| App icon | — | Optional; swap via native build config if needed |
+| Firebase / feature flags | `FIREBASE_*`, feature flags | Per-env config only |
+
+All other app behavior and identity (bundle ID, signing, scheme for deep links if single) stay the same across envs.
+
+---
+
+## What must NOT change
+
+- **Bundle identifier** (iOS) and **applicationId** (Android) — same for dev, stage, prod.
+- Signing credentials — one app identity.
+- Do not create separate schemes or product flavors that change bundle ID / applicationId.
+
+---
+
+## Usage in code
+
+- Install and link **react-native-config**.
+- In JS/TS, read variables via `Config.VARIABLE_NAME` (e.g. `Config.API_BASE_URL`).
+- Never hardcode URLs or env-specific strings; always use `Config.*` or a small wrapper (e.g. `src/constants/env.ts` that re-exports `Config` or typed keys).
+- Use the same variable names in every `.env.*` file so only values differ.
+
+Example `.env.dev`:
+
+```
+API_BASE_URL=https://api.dev.example.com
+APP_DISPLAY_NAME=MyApp Dev
+```
+
+Example usage:
+
+```javascript
+import Config from 'react-native-config';
+
+const baseUrl = Config.API_BASE_URL;
+```
+
+---
+
+## Running and building
+
+- **Dev**: `ENVFILE=.env.dev npx react-native run-ios` (and same for Android).
+- **Stage**: `ENVFILE=.env.stage …`
+- **Prod**: `ENVFILE=.env.prod …`
+
+Use the same `ENVFILE` when building release binaries. Optionally add npm scripts or app-specific scripts that set `ENVFILE` so no one relies on a default .env.
+
+---
+
+## Summary
+
+- Three envs: dev, stage, prod; one bundle ID / applicationId.
+- One `.env.*` per env; all values come from config; never hardcode URLs or env-specific strings.
